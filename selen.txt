@@ -1,0 +1,134 @@
+2.
+
+1.Output ovog zadatka mora biti implementacija nekog od rješenja iz tutorijala, s nekim primjerom testa.
+2.Selenium radi
+3.Pokreće browser i pokreće neki jednostavan test na web stranici po izboru
+4.Dokumentirati sve što taj jednostavan test radi
+5.Dodati kratak opis dojmova u radu sa Seleniumom, što ti je bilo lako, a na što ti nije baš bilo jasno.
+6.Dodaj zaseban tekstualni dokument na repozitorij u ovu svrhu.
+
+
+
+
+
+
+
+
+Da bi program radio potrebno je u nugget packet mannageru skinut sljedece : Selenium,chrome driver,selenium support,nunit
+nunit test adapter,dontnetselenumextras.pageObjects
+
+U program.cs klasi nalaze se metode Initialise,test,cleanup koje rade sljedece:
+
+initialise: pokrece browser,u metodi se nalazi referenca za browser(chrome) te navigacija na url koji ce se
+otvoriti tj. na kojem ce se test izvoditi,iznad metode se nalazi atribut [SetUp],to znaci da ce se ova metoda
+pozvati prije testa 
+
+test:izvrsava test(execute),iznad metode se nalazi atribut [Test],pomocu toga visual zna da je ovo
+moja test metoda,   
+
+cleanup:zatvara browser,iznad metode se nalazi atribut [TearDown],to znaci da ce se ova metoda pozvati nakon
+testa 
+
+Da bi smanjila kod i smanjila mogucnost gresaka napravila sam klasu pod nazivom Properties
+Ondje se nalazi  public  IWebDriver driver { get; set; },
+
+
+Koristim takodjer POM(page object model) design pattern
+To znaci da metode,elemente... za web stranicu koju cu testirat stavljam 
+u posebnu klasu
+Zasto?Kod se lako odrzava,razumljiv je,ako se nesto na web stranici promjeni,npr ime elementa,znam
+gdje,sto i kako da promjenim
+Klasa se sastoji od konstruktora
+ using SeleniumExtras.PageObjects;(PageFactory is obsolete,s izdanjem 3.11.0 Selenium.Support, 
+PageFactory i ExposedConditions označeni su kao zastarjeli. Sa Selenium.Support 3.12.0 oni su u potpunosti uklonjeni.
+To sam rjesila tako sto sam na nuggetu skinula DotNetSeleniumExtras.PageObjects i to koristila,program svakako radi i bez
+toga ali izbacuje warning) 
+[FindsBy] pronalazi elemente na stranici
+[FindsBy(How =How.Name,Using = "firstName")]  how=how.Name(kako da pronadje? po tipu name,Using = "firstName",value je "firstName")
+value i tip elementa pronalazim pomocu inspect element,mogu koristit xpath ili obican css
+
+U program klasi imam vise test metoda:
+
+Test:alert pop up,htjela sam isprobat rad sa alertom te sto ucinit kada stranica ima alert pop up,testirala sam
+sto ce se dogodit kada se posalje prazna forma
+ako se posalje prazna forma dobije se alert pop up sa tekstom  "Molimo unesite Vašu e-mail adresu."
+Test provjerava da li se taj alert sa tim tekstom pojavljuje,dohvaca tekst te ga usporedjuje
+ako je alert tekst jednak sa ocekivanim test prolazi 
+takodjer sa Console.WriteLine(); ispisujem tekst alerta
+
+Test1:Jednostavan test,provjerava da li je slanje kontakta ispravno,to naravno podrazumjeva da je email tocnog
+formata i da su ime i poruka postojuci,ako nisu test ne prolazi   
+
+
+Test2:opet isprobavam rad sa alertom,ako upisem ime i neispravan email hocu li dobiti alert poruku,
+test provjerava da li se alert poruka prikazuje ako se prikaze dohvaca tekst iz nje te ga usporedjuje,
+ako je tekst jednak sa ocekivanim  "Format e-mail adrese nije ispravan." test prolazim,
+alert.accept(); prihavca alert,kao da sam kliknula na ok 
+
+Test3:Ovdje vjezbam rad sa xpathom,za pronalazak xpatha elementa na stranici skinula sam chropath extension,
+ testiram sto ce se dogoditi klikom na button "Više",kada se klikne na taj button treba se prikazati
+druga stranica i Što radimo heading
+test pronalazi heading pomocu xpatha,te vraca tekst "sto radimo",takodjer pronalazi drugu stranicu pomocu 
+xpatha i provjerava da li je prikazana sto vraca u obliku true ili false
+
+Test4:test provjerava da li klik na EN radi,te da li se main heading mjenja u engleski jezik
+ovdje imam actual i expected string 
+string actualString = Properties.driver.FindElement(By.XPath("//span[@id='MainPageHeading']")).Text;
+actual string je tekst koji se dohvaca 
+string expectedString = "SOFTWARE TEST AUTOMATION EXPERTS";
+expectedString je tekst koji ja ocekujem da ce se dohvatit,
+usporedjujem oba teksta pomocu Assert.IsTrue()
+ako su oba teksta ista test prolazi,to naravno pod uvjetom da klik na EN mjenja jezik u engleski 
+
+
+U ovom projektu sam htjela isprobat razne nacine testiranja,usporedit ih,kako radi selenium,kako rade
+Browser commands,Web Element commands,ako ne rade zasto? sto sam krivo napravila?
+u test metodama je moglo biti manje koda kada bih napravila nesto poput
+fillKontakt(string Name){txtName.SendKeys(Name);},pozvala bi to u testu gp.fillKontakt("kata"),tako bih
+u jednoj liniji koda napravila ono sto sam napravila u vise linija
+smatrala sam da to nije potrebno jer je ovo ipak jedan malen test bez previse test metoda,ali kada bih imala vise test
+metoda i vise elemenata za testiranje koristila bih taj nacin
+Custom metode za unos teksta etc...nisam radila nego sam koristila built in metode jer 
+sam smatrala da su one dovoljne za ovaj test
+Naravno test nije u potpunosti funkcionalan jer moze doci do promjena heading teksta,alert teksta i slicno,
+na roxoft web stranici
+Ukupan kod sam mogla smanjiti jos vise
+ 
+Dojmovi
+Rad u seleniumu je vrlo zanimljiv te zabavan,posebno me dojmila brzina kojom se test obavi
+Selenium WebDriver Commands u C# pruzaju puno razlictih mogucnosti testiranja
+Odlicna stavka takodjer je to sto selenium podrzava koristenje razlicih browsera,te
+ga je moguce koristit u vise programskih jezika,
+Koristenje SendKeys(),Click(),PageSource() etc.. je vrlo lako 
+Takodjer osnove seleniuma se mogu brzo naucit 
+
+Nejasan mi je bio select drowpdowna,rad sa excel tablicama i html tablicama(prosla sam video tutorijal koji ste mi poslali),
+takodjer ako select nije prisutan,tj dropdown nije napravljen pomocu select taga(dropdown je u div tagu),select nece raditi
+Prije ovog projekta pokusala sam testirati gmail prijavu gdje sam takodjer vjezbala page listing
+te na sljedecoj stranici gdje se treba odabrat drzava i upisati telefonski broj za tu drzavu 
+na odabir drzave u dropdownu dobila bih "Element should have been select but was div",takodjer sam ovdje na razlicite
+nacine pokusavala ispisati error koji se prikaze npr ako je email vec zauzet,npr ako je crveno znaci da je error
+pa sam isprobavala rad sa GetCSSValue,takodjer ako se klikom na nesto neka boja promjeni,
+pomocu find element i xpatha nasla sam tekst errora,pa ispisala
+znala bi nekad krivo upisat id ili name elementa,pa on ne bi bio pronadjen
+na stranici,ili bi id i name zamjenila pa umjesto id-a upisala name,
+takodjer sam radila sa selenium wait-om,jer kada bi se stranica loadala neki elementi 
+na toj stranici nisu se loadali pa bi to stvaralo problem u obliku ElementNotVisibleException,
+znala sam dobijat i element not interactable exception,
+Ovim sam se vise bavila,citala sam stackoverflow clankove,citala razlicite clankove na web stranicma
+te gledala tutorijale na youtubu
+Takodjer sam saznala da je testiranje gmaila ili facebooka "worst pratice of test automation"  zato sto je 
+protiv njihovog uvjeta koristenja  i jer je nepouzdano,ipak glavno je da ucim 
+Link : https://selenium.dev/documentation/en/worst_practices/gmail_email_and_facebook_logins/
+
+
+
+
+
+
+
+
+
+    
+
+
